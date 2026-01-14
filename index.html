@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FX Step - কালার ট্রেডিং ক্যালকুলেটর</title>
+    <style>
+        /* মূল ডিজাইন */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff; /* সম্পূর্ণ অ্যাপ সাদা */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            color: #007bff; /* নীল রঙ */
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #007bff; /* নীল বর্ডার */
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+
+        /* বাটন ডিজাইন */
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff; /* নীল বাটন */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* রেজাল্ট সেকশন */
+        #resultArea {
+            margin-top: 25px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .step-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #28a745;
+            font-size: 18px;
+            padding: 10px;
+            background: #f0fff4;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FX Step</h1>
+    <p class="subtitle">কালার ট্রেডিং এ অর্থ উপার্জন করার জন্য আপনার ব্যালেন্স কে স্টেপ তৈরি করে নিন।</p>
+    
+    <div class="input-group">
+        <label>আপনার ব্যালেন্স লিখুন:</label>
+        <input type="number" id="balance" value="1000" placeholder="৳1000">
+    </div>
+    
+    <div class="input-group">
+        <label>স্টেপ লিখুন:</label>
+        <input type="number" id="stepCount" value="6" placeholder="6">
+    </div>
+
+    <button onclick="calculateSteps()">স্টেপ তৈরি করুন</button>
+
+    <div id="resultArea" style="display:none;">
+        <div class="result-header">
+            <span>স্টেপ নং</span>
+            <span>বাজির পরিমাণ</span>
+            <span>বাকি থাকবে</span>
+        </div>
+        <div id="stepsList"></div>
+        <div id="summary" class="footer-text"></div>
+    </div>
+</div>
+
+<script>
+    function calculateSteps() {
+        const totalBalance = parseFloat(document.getElementById('balance').value);
+        const steps = parseInt(document.getElementById('stepCount').value);
+        const stepsList = document.getElementById('stepsList');
+        const resultArea = document.getElementById('resultArea');
+        const summary = document.getElementById('summary');
+
+        if (isNaN(totalBalance) || isNaN(steps) || totalBalance <= 0 || steps <= 0) {
+            alert("সঠিক তথ্য ইনপুট দিন!");
+            return;
+        }
+
+        // কালার ট্রেডিং লজিক (সাধারণত ব্যালেন্সকে ৩ গুণ হারে ভাগ করা হয়)
+        // এখানে একটি ডাইনামিক ভাগ প্রক্রিয়া ব্যবহার করা হয়েছে যাতে ব্যালেন্স শেষ না হয়
+        stepsList.innerHTML = "";
+        let remaining = totalBalance;
+        let unit = totalBalance / (Math.pow(2, steps) - 1); // একটি আনুপাতিক ভাগ
+
+        for (let i = 1; i <= steps; i++) {
+            let bet = Math.floor(unit * Math.pow(2, i-1));
+            
+            // যদি বাজি ব্যালেন্সের চেয়ে বেশি হয়ে যায়
+            if (bet > remaining) bet = remaining;
+            
+            remaining -= bet;
+
+            const row = document.createElement('div');
+            row.className = 'step-item';
+            row.innerHTML = `
+                <span>${i}.</span>
+                <span>৳${bet}</span>
+                <span>৳${remaining >= 0 ? remaining.toFixed(0) : 0}</span>
+            `;
+            stepsList.appendChild(row);
+
+            if (remaining <= 0) break;
+        }
+
+        summary.innerText = `মোট ৳${totalBalance} টাকার স্টেপ সম্পূর্ণ হয়েছে`;
+        resultArea.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
